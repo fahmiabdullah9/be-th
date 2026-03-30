@@ -1,0 +1,39 @@
+@host = http://localhost:3000/api/auth
+
+### Register
+POST {{host}}/register
+Content-Type: application/json
+
+{
+    "name": "fahmi",
+    "phone": "0812345678",
+    "email": "fahmiiabd@gmail.com",
+    "password": "meruyung1"
+}
+
+### 
+
+### Login (accessToken = 15m, refreshToken = 7d)
+POST {{host}}/login
+Content-Type: application/json
+
+{
+    "email": "abdul@gmail.com",
+    "password": "meruyung1"
+}
+
+### Refresh Token (Token = RefreshToken)
+POST {{host}}/refreshToken
+Content-Type: application/json
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzczMTE1NTU3LCJleHAiOjE3NzM3MjAzNTd9.K9pooJbvVgHprT_ckfRa30nVegSqCSC1Tmj0RiP1du0"
+}
+
+### Logout (Token = refreshToken)
+POST {{host}}/logout
+Content-Type: application/json
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzczMTE1NDk4LCJleHAiOjE3NzM3MjAyOTh9.0WhTQVKWq0-dBWzSh10FUSyZpjGxOK2uPEILgInEkos"
+}

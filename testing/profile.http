@@ -1,0 +1,14 @@
+@host = http://localhost:3000/api/profile
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwicm9sZSI6IjIiLCJpYXQiOjE3NzQ1MDgzOTUsImV4cCI6MTc3NDUxMTk5NX0.2hc44eJLZtK6vrSDULtKSyTqJZ_zx5H6nuFCoyQqAL8
+
+### ProfileDetail
+GET {{host}}/ProfileDetail
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+## ChangePhotoProfile
+# POST http://localhost:3000/api/profile/ChangePhotoProfile
+
+### GetPhotoProfile
+GET {{host}}/PhotoProfile
+Authorization: Bearer {{accessToken}}

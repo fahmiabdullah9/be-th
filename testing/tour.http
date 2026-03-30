@@ -1,0 +1,45 @@
+@host = http://localhost:3000/api/tour
+
+### Get Data
+GET {{host}}/TourList
+Accept: application/json
+
+### Get Detail
+GET {{host}}/TourDetail?tourId=2
+Accept: application/json
+
+### Get Search
+GET {{host}}/TourSearch?title=liburan
+Accept: application/json
+
+### Add Data
+POST {{host}}/TourCreate
+Content-Type: application/json
+
+{
+    "title": "Liburan ke yogyakarta",
+    "day": 2,
+    "night": 3,
+    "description": "Paket wisata 3 hari 2 malam di Pantai Kuta",
+    "location": "Bali, Indonesia"
+}
+
+
+### Update Data
+POST {{host}}/TourUpdate
+Content-Type: application/json
+
+{
+    "id": 2,
+    "title": "Liburan ke Bali (Updated)",
+    "description": "Paket wisata 4 hari 3 malam termasuk hotel",
+    "location": "Bali, Indonesia"
+}
+
+### Delete Data
+POST  {{host}}/TourDelete
+Content-Type: application/json
+
+{
+    "id": 2
+}
