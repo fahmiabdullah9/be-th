@@ -1,0 +1,14 @@
+{
+    "idTour": 3,
+    "idCust": 2,
+    "bookDate": "string",
+    "prodNote": "string",
+    "pickupDate": "string",
+    "pickupLocation": "string",
+    "prodList": [
+        {
+        "prodVariant": "string",
+        "prodQTY": 0
+        }
+    ]
+}

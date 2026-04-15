@@ -1,34 +1,38 @@
 const db = require("../config/db");
 
 const Checkout = {
-  // Simpan data utama (Inquiry)
+  // models/checkoutModel.js
   createInquiry: async (data) => {
     const {
       booking_code,
       tour_id,
-      full_name,
-      email,
-      phone,
+      user_id,
       travel_date,
+      note,
+      pickup_date,
+      pickup_location,
       total_price,
     } = data;
+
     const [result] = await db.query(
-      `INSERT INTO checkouts (booking_code, tour_id, full_name, email, phone, travel_date, total_price, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
+      `INSERT INTO checkouts 
+       (booking_code, tour_id, user_id, travel_date, note, pickup_date, pickup_location, total_price, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`, // Jumlah '?' dikurangi menjadi 8
       [
         booking_code,
         tour_id,
-        full_name,
-        email,
-        phone,
+        user_id,
         travel_date,
+        note,
+        pickup_date,
+        pickup_location,
         total_price,
       ],
     );
+
     return result.insertId;
   },
 
-  // Simpan rincian item (Bulk Insert)
   addItems: async (checkoutId, items) => {
     const values = items.map((item) => [
       checkoutId,
@@ -36,6 +40,7 @@ const Checkout = {
       item.qty,
       item.subtotal,
     ]);
+
     return await db.query(
       "INSERT INTO checkout_items (checkout_id, variant_id, qty, subtotal) VALUES ?",
       [values],
@@ -59,20 +64,24 @@ const Checkout = {
     );
   },
 
-  // Ambil detail berdasarkan ID checkout
   getDetailById: async (id) => {
-    // 1. Ambil data utama dari tabel checkouts
-    const [checkout] = await db.query("SELECT * FROM checkouts WHERE id = ?", [
-      id,
-    ]);
+    // Ambil data utama + join ke users untuk dapet info pemesan
+    const [checkout] = await db.query(
+      `SELECT c.*, u.full_name, u.email 
+       FROM checkouts c
+       JOIN users u ON c.user_id = u.id
+       WHERE c.id = ?`,
+      [id],
+    );
+
     if (checkout.length === 0) return null;
 
-    // 2. Ambil rincian item-itemnya + Nama Varian dari tabel sebelah
+    // Ambil list item + nama variant-nya
     const [items] = await db.query(
-      `SELECT ci.*, tv.variant_name as variant_name 
-   FROM checkout_items ci
-   JOIN tour_variants tv ON ci.variant_id = tv.id
-   WHERE ci.checkout_id = ?`,
+      `SELECT ci.*, tv.variant_name 
+       FROM checkout_items ci
+       JOIN tour_variants tv ON ci.variant_id = tv.id
+       WHERE ci.checkout_id = ?`,
       [id],
     );
 

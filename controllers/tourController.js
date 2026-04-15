@@ -1,4 +1,7 @@
 const Tour = require("../models/tourModel");
+const sharp = require("sharp");
+const path = require("path");
+const fs = require("fs");
 
 exports.getTours = async (req, res) => {
   try {
@@ -164,18 +167,67 @@ exports.addTour = async (req, res) => {
   }
 };
 
+// exports.addTourImages = async (req, res) => {
+//   try {
+//     await Tour.createImage(req.body);
+//     res.status(200).json({
+//       status: true,
+//       message: "Image added successfully",
+//     });
+//   } catch (err) {
+//     res.status(400).json({
+//       status: false,
+//       message: err.message,
+//     });
+//   }
+// };
+
 exports.addTourImages = async (req, res) => {
   try {
-    await Tour.createImage(req.body);
+    const { tour_id, is_cover } = req.body;
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Pilih file gambar dulu!" });
+    }
+
+    // 1. Siapkan nama file baru (pakai .jpg)
+    const fileName = `${Date.now()}.jpg`;
+    const outputPath = path.join("public/uploads/", fileName);
+
+    // 2. Gunakan Buffer agar file asli tidak terkunci (locked) oleh Sharp
+    const imageBuffer = await sharp(req.file.path)
+      .resize(1200)
+      .jpeg({ quality: 80 })
+      .toBuffer(); // Simpan ke memori dulu
+
+    // 3. Tulis hasil buffer ke file tujuan
+    fs.writeFileSync(outputPath, imageBuffer);
+
+    // 4. Sekarang aman untuk hapus file asli hasil upload Multer
+    // Tambahkan delay kecil atau gunakan try-catch untuk memastikan file tidak terkunci
+    try {
+      fs.unlinkSync(req.file.path);
+    } catch (unlinkErr) {
+      console.warn("Gagal menghapus file temporary:", unlinkErr.message);
+      // Kita abaikan saja karena ini cuma file temp, yang penting proses utama sukses
+    }
+
+    // 5. Simpan ke database
+    await Tour.createImage({
+      tour_id,
+      image_url: fileName,
+      is_cover: is_cover || 0,
+    });
+
     res.status(200).json({
       status: true,
-      message: "Image added successfully",
+      message: "Image added and converted successfully",
+      data: { imageUrl: fileName },
     });
   } catch (err) {
-    res.status(400).json({
-      status: false,
-      message: err.message,
-    });
+    res.status(400).json({ status: false, message: err.message });
   }
 };
 

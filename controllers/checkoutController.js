@@ -1,48 +1,62 @@
 const Checkout = require("../models/checkoutModel");
 const db = require("../config/db"); // Dibutuhkan untuk ambil harga variant secara langsung
 
-// --- API INQUIRY ---
 exports.inquiry = async (req, res) => {
   try {
-    const { tour_id, full_name, email, phone, travel_date, items } = req.body;
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ status: false, message: "User not authenticated" });
+    }
+
+    const userId = req.user.id;
+    const { idTour, bookDate, prodNote, pickupDate, pickupLocation, prodList } =
+      req.body;
+
     let totalAllPrice = 0;
     let itemsToSave = [];
 
-    // 1. Hitung total harga dengan mengambil harga asli dari DB
-    for (const v of items) {
-      // Kita ambil harga langsung dari tabel tour_variants
+    for (const item of prodList) {
+      // CARI ID & HARGA berdasarkan NAMA VARIANT dan TOUR ID
       const [rows] = await db.query(
-        "SELECT price FROM tour_variants WHERE id = ?",
-        [v.variant_id],
+        "SELECT id, price FROM tour_variants WHERE variant_name = ? AND tour_id = ?",
+        [item.prodVariant, idTour],
       );
       const variantData = rows[0];
 
       if (variantData) {
-        const subtotal = Number(variantData.price) * v.qty;
+        const subtotal = Number(variantData.price) * item.prodQTY;
         totalAllPrice += subtotal;
         itemsToSave.push({
-          variant_id: v.variant_id,
-          qty: v.qty,
+          variant_id: variantData.id,
+          qty: item.prodQTY,
           subtotal: subtotal,
+        });
+      } else {
+        // Optional: Beri peringatan jika nama variant tidak ditemukan
+        return res.status(400).json({
+          status: false,
+          message: `Variant '${item.prodVariant}' tidak ditemukan untuk tour ini.`,
         });
       }
     }
 
-    // 2. Generate Booking Code (TRP + Timestamp)
     const bookingCode = `TH-${Math.floor(Date.now() / 1000)}`;
 
-    // 3. Simpan data utama ke tabel 'checkouts' lewat Model
     const checkoutId = await Checkout.createInquiry({
       booking_code: bookingCode,
-      tour_id,
-      full_name,
-      email,
-      phone,
-      travel_date,
+      tour_id: idTour,
+      user_id: userId,
+      // full_name: req.user.full_name || "fahmi",
+      // email: req.user.email || "fahmiiabd@gmail.com",
+      // phone: req.user.phone || "085117279220",
+      travel_date: bookDate,
+      note: prodNote,
+      pickup_date: pickupDate,
+      pickup_location: pickupLocation,
       total_price: totalAllPrice,
     });
 
-    // 4. Simpan rincian ke tabel 'checkout_items' lewat Model
     await Checkout.addItems(checkoutId, itemsToSave);
 
     res.status(200).json({
@@ -58,7 +72,6 @@ exports.inquiry = async (req, res) => {
   }
 };
 
-// --- API CHECKOUT ---
 exports.checkout = async (req, res) => {
   try {
     const { booking_code, payment_method } = req.body;
