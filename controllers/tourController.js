@@ -167,21 +167,6 @@ exports.addTour = async (req, res) => {
   }
 };
 
-// exports.addTourImages = async (req, res) => {
-//   try {
-//     await Tour.createImage(req.body);
-//     res.status(200).json({
-//       status: true,
-//       message: "Image added successfully",
-//     });
-//   } catch (err) {
-//     res.status(400).json({
-//       status: false,
-//       message: err.message,
-//     });
-//   }
-// };
-
 exports.addTourImages = async (req, res) => {
   try {
     const { tour_id, is_cover } = req.body;

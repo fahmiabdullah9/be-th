@@ -36,10 +36,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(express.static("public"));
 
-// Cukup dua baris ini untuk urusan file statis:
-app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
-app.use(express.static(path.join(__dirname, "public")));
+// app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
+// app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/Web", [authRoutes, profileRoutes, tourRoutes, checkoutRoutes]);
