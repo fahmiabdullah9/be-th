@@ -90,6 +90,33 @@ const Checkout = {
       items: items,
     };
   },
+
+  getDetailWithTour: async (id) => {
+    // Ambil data checkout + data tour-nya
+    const [rows] = await db.query(
+      `SELECT c.*, t.title, t.day, t.night, t.description, t.location 
+       FROM checkouts c
+       JOIN tours t ON c.tour_id = t.id
+       WHERE c.id = ?`,
+      [id],
+    );
+
+    if (rows.length === 0) return null;
+
+    // Ambil detail items dan nama variant-nya
+    const [items] = await db.query(
+      `SELECT ci.*, tv.variant_name 
+       FROM checkout_items ci
+       JOIN tour_variants tv ON ci.variant_id = tv.id
+       WHERE ci.checkout_id = ?`,
+      [id],
+    );
+
+    return {
+      ...rows[0],
+      items: items,
+    };
+  },
 };
 
 module.exports = Checkout;
